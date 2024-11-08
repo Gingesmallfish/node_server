@@ -8,8 +8,15 @@ const Op = db.Sequelize.Op;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
+
+
+/**
+ * 注册新用户
+ * @param {Object} req - 请求对象
+ * @param {object} res - 响应对象
+ */
 exports.signup = (req, res) => {
-  // Save User to Database
+  // 保存用户到数据中
   User.create({
     username: req.body.username,
     email: req.body.email,
@@ -17,6 +24,7 @@ exports.signup = (req, res) => {
   })
     .then(user => {
       if (req.body.roles) {
+        // 查找设置用户角色
         Role.findAll({
           where: {
             name: {
@@ -25,13 +33,13 @@ exports.signup = (req, res) => {
           }
         }).then(roles => {
           user.setRoles(roles).then(() => {
-            res.send({ message: "User registered successfully!" });
+            res.send({ message: "用户注册成功！" });
           });
         });
       } else {
-        // user role = 1
+        // 默认用户角色为 1
         user.setRoles([1]).then(() => {
-          res.send({ message: "User registered successfully!" });
+          res.send({ message: "用户注册成功！" });
         });
       }
     })
@@ -40,6 +48,12 @@ exports.signup = (req, res) => {
     });
 };
 
+
+/**
+ * 用户登录
+ * @param {Object} req - 请求对象
+ * @param {Object} res - 响应对象
+ */
 exports.signin = (req, res) => {
   User.findOne({
     where: {
@@ -51,6 +65,7 @@ exports.signin = (req, res) => {
         return res.status(404).send({ message: "User Not found." });
       }
 
+      // 验证密码
       var passwordIsValid = bcrypt.compareSync(
         req.body.password,
         user.password
@@ -62,14 +77,14 @@ exports.signin = (req, res) => {
           message: "Invalid Password!"
         });
       }
-
+      // 生成 JWT 令牌
       const token = jwt.sign({ id: user.id },
-                              config.secret,
-                              {
-                                algorithm: 'HS256',
-                                allowInsecureKeySizes: true,
-                                expiresIn: 86400, // 24 hours
-                              });
+        config.secret,
+        {
+          algorithm: 'HS256',
+          allowInsecureKeySizes: true,
+          expiresIn: 86400, // 24 hours
+        });
 
       var authorities = [];
       user.getRoles().then(roles => {

@@ -10,6 +10,7 @@ module.exports = function(app) {
     next();
   });
 
+  // 公共资源接口
   app.get("/api/test/all", controller.allAccess);
 
   app.get(

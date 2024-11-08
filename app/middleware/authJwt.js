@@ -3,6 +3,12 @@ const config = require("../config/auth.config.js");
 const db = require("../models");
 const User = db.user;
 
+/**
+ * 验证jwt 令牌
+ * @param {object} req - 请求对象
+ * @param {object} res - 响应对象
+ * @param {function} next - 下一步中间函数
+ */
 verifyToken = (req, res, next) => {
   let token = req.headers["x-access-token"];
 
@@ -13,18 +19,24 @@ verifyToken = (req, res, next) => {
   }
 
   jwt.verify(token,
-            config.secret,
-            (err, decoded) => {
-              if (err) {
-                return res.status(401).send({
-                  message: "Unauthorized!",
-                });
-              }
-              req.userId = decoded.id;
-              next();
-            });
+    config.secret,
+    (err, decoded) => {
+      if (err) {
+        return res.status(401).send({
+          message: "Unauthorized!",
+        });
+      }
+      req.userId = decoded.id;
+      next();
+    });
 };
 
+/**
+ * 检查用户是否具有 "admin" 角色
+ * @param {object} req - 请求对象
+ * @param {object} res - 响应对象
+ * @param {function} next - 下一步中间函数
+ */
 isAdmin = (req, res, next) => {
   User.findByPk(req.userId).then(user => {
     user.getRoles().then(roles => {
@@ -43,6 +55,13 @@ isAdmin = (req, res, next) => {
   });
 };
 
+/**
+ * 检查用户是否具有 "moderator" 角色
+ * @param {object} req - 请求对象
+ * @param {object} res - 响应对象
+ * @param {function} next - 下一步中间函数
+ */
+
 isModerator = (req, res, next) => {
   User.findByPk(req.userId).then(user => {
     user.getRoles().then(roles => {
@@ -60,6 +79,12 @@ isModerator = (req, res, next) => {
   });
 };
 
+/**
+ * 检查用户是否具有 "moderator" 或 "admin" 角色
+ * @param {object} req - 请求对象
+ * @param {object} res - 响应对象
+ * @param {function} next - 下一步中间函数
+ */
 isModeratorOrAdmin = (req, res, next) => {
   User.findByPk(req.userId).then(user => {
     user.getRoles().then(roles => {

@@ -1,3 +1,4 @@
+// 设置数据链接
 module.exports = {
   HOST: "localhost",
   USER: "root",
